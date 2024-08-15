@@ -1,9 +1,11 @@
 package com.example.ChatAppV2;
 
 import com.example.ChatAppV2.config.AWSConfig;
+import com.example.ChatAppV2.controller.AuthController;
 import com.example.ChatAppV2.service.AWSCognitoService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -23,9 +25,6 @@ public class ChatAppV2Application {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ChatAppV2Application.class, args);
-
-
-
 
 
 		//awsCognitoService.signUp(identityProviderClient, "TallGuy", "aA1!aaaa", "esteves.jacob.c@gmail.com");

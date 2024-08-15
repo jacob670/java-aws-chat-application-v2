@@ -5,6 +5,7 @@ import com.example.ChatAppV2.model.AccountData;
 import com.example.ChatAppV2.model.LoginData;
 import com.example.ChatAppV2.service.AWSCognitoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,10 +14,15 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.CodeMismatchException;
 
+import java.security.InvalidKeyException;
+import java.security.InvalidParameterException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -30,29 +36,52 @@ public class AuthController {
             .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
             .build();
 
-    private boolean signUpFormSubmitted = false;
-
-
-
-
-
-
-
-    /*
-    * METHODS
-    * */
-
     @PostMapping("/signUpRequest")
-    public ResponseEntity<String> submitSignUpRequest(@RequestBody AccountData accountData) {
+    public ResponseEntity<String> submitSignUpRequest(@RequestBody AccountData accountData) throws NoSuchAlgorithmException, InvalidKeyException {
+        AWSCognitoService awsCognitoService = new AWSCognitoService();
+        awsCognitoService.signUp(identityProviderClient, accountData.getName(), accountData.getPassword(), accountData.getEmail());
 
-        boolean signUpSuccessful = true;
+        String token = UUID.randomUUID().toString();
+        String confirmationUrl = "confirm/" + token;
 
-        if (signUpSuccessful) {
-            return ResponseEntity.ok("Sign-up successful");
-        } else {
-            return ResponseEntity.status(400).body("Sign-up failed");
-        }
+        return new ResponseEntity<>(confirmationUrl, HttpStatus.OK);
     }
+
+    @GetMapping("confirmSignUp/{token}")
+    public ResponseEntity<String> submitConfirmationSignUpCode(@PathVariable String token) {
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.badRequest().body("Invalid token");
+        }
+
+        return ResponseEntity.ok(token);
+    }
+
+    @PostMapping("confirmSignUp/{token}")
+    public ResponseEntity<String> submitCode(@PathVariable String token, @RequestBody AccountData accountData) throws NoSuchAlgorithmException, InvalidKeyException {
+        AWSCognitoService awsCognitoService = new AWSCognitoService();
+
+        try {
+        awsCognitoService.confirmSignUp(AWSCognitoService.CLIENTID, identityProviderClient, accountData.getConfirmationCode(), accountData.getUsername());
+        } catch(CodeMismatchException e) {
+            return ResponseEntity.ok("Invalid confirmation code was found");
+        }
+
+        return ResponseEntity.ok("Successfully Confirmed");
+    }
+
+    private boolean validateToken(String token) {return true;}
+
+
+
+
+
+
+
+
+
+
+
+
 
     @PostMapping("/loginRequest")
     public ResponseEntity<String> submitLoginRequest(@RequestBody LoginData loginData) {
@@ -61,7 +90,7 @@ public class AuthController {
                             loginData.getName(), loginData.getPassword()));
 
 
-        //awsCognitoService.authenticateUser(identityProviderClient, AWSCognitoService.CLIENTID, AWSCognitoService.IAMID, formData.getName(), formData.getPassword());
+        //awsCognitoService.authenticateUser(identityProviderClient, AWSCognitoService.CLIENTID, AWSCognitoService.IAMID, loginData.getName(), loginData.getName(), loginData.getPassword());
         return ResponseEntity.ok("Form submitted successfully");
     }
 }
