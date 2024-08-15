@@ -67,6 +67,8 @@ public class AuthController {
         }
 
         return ResponseEntity.ok("Successfully Confirmed");
+
+        // still confirm
     }
 
     private boolean validateToken(String token) {return true;}
