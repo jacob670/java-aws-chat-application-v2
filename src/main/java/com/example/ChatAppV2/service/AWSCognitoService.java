@@ -1,18 +1,14 @@
 package com.example.ChatAppV2.service;
 
-import com.example.ChatAppV2.config.AWSConfig;
+import com.example.ChatAppV2.model.CognitoTokenResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.rmi.ServerError;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -102,9 +98,8 @@ public class AWSCognitoService {
         System.out.println("User " + username + " was confirmed");
     }
 
-    public String authenticateUser(CognitoIdentityProviderClient cognitoIdentityProviderClient, String userPoolId, String clientId, String username, String password) {
-        String secretHash = AWSCognitoService.computeSecretHash("TallGuy", CLIENTID, CLIENTSECRET);
-
+    public CognitoTokenResponse authenticateUser(CognitoIdentityProviderClient cognitoIdentityProviderClient, String userPoolId, String clientId, String username, String password) {
+        String secretHash = AWSCognitoService.computeSecretHash(username, CLIENTID, CLIENTSECRET);
 
         Map<String, String> authParameters = new HashMap<>();
         authParameters.put("USERNAME", username);
@@ -123,7 +118,14 @@ public class AWSCognitoService {
         System.out.println(response.authenticationResult());
         System.out.println(response.challengeNameAsString());
 
-        return response.authenticationResult().accessToken();
+        //return response.authenticationResult().accessToken();
+
+        return new CognitoTokenResponse(
+                response.authenticationResult().accessToken(),
+                response.authenticationResult().idToken(),
+                response.authenticationResult().refreshToken(),
+                response.authenticationResult().expiresIn()
+        );
     }
 
     public static String computeSecretHash(String username, String clientId, String clientSecret) {

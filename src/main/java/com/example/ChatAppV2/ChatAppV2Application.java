@@ -25,12 +25,6 @@ public class ChatAppV2Application {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ChatAppV2Application.class, args);
-
-
-
-
-		//awsCognitoService.signUp(identityProviderClient, "TallGuy", "aA1!aaaa", "esteves.jacob.c@gmail.com");
-		//awsCognitoService.confirmSignUp(AWSCognitoService.CLIENTID, identityProviderClient, "474730", "TallGuy");
 	}
 
 }

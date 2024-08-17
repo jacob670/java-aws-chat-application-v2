@@ -3,12 +3,10 @@ package com.example.ChatAppV2.controller;
 import com.example.ChatAppV2.config.AWSConfig;
 import com.example.ChatAppV2.model.AccountData;
 import com.example.ChatAppV2.model.LoginData;
+import com.example.ChatAppV2.model.CognitoTokenResponse;
 import com.example.ChatAppV2.service.AWSCognitoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -17,11 +15,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityPr
 import software.amazon.awssdk.services.cognitoidentityprovider.model.CodeMismatchException;
 
 import java.security.InvalidKeyException;
-import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
 import java.util.UUID;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -43,14 +37,13 @@ public class AuthController {
         boolean isUsernameTaken = AWSCognitoService.isUsernameTaken(identityProviderClient, accountData.getName(), AWSCognitoService.USERPOOLID);
 
         if (!isValidPassword(accountData.getPassword())) {
-            //return new ResponseEntity<>("Invalid Password", HttpStatus.BAD_REQUEST);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Password");
         }
 
         if (isUsernameTaken) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists in system");
         }
-        //awsCognitoService.signUp(identityProviderClient, accountData.getName(), accountData.getPassword(), accountData.getEmail());
+        awsCognitoService.signUp(identityProviderClient, accountData.getName(), accountData.getPassword(), accountData.getEmail());
 
         String token = UUID.randomUUID().toString();
         String confirmationUrl = "confirm/" + token;
@@ -58,16 +51,6 @@ public class AuthController {
         System.out.println(accountData.getName());
         return ResponseEntity.ok(confirmationUrl);
     }
-
-//    @GetMapping("/isUsernameTaken")
-//    public ResponseEntity<String> getValidityUsername(@RequestBody AccountData accountData) {
-//        boolean isUsernameTaken = AWSCognitoService.isUsernameTaken(identityProviderClient, accountData.getUsername(), AWSCognitoService.USERPOOLID);
-//
-//        if (!isUsernameTaken) {
-//            return ResponseEntity.ok("Username does not exist in the system");
-//        }
-//        return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists in system");
-//    }
 
     private boolean isValidPassword(String password) {
         String passwordPattern = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%?=*&]).{8,20})";
@@ -79,14 +62,9 @@ public class AuthController {
         if (token == null || token.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid token");
         }
-
         return ResponseEntity.ok(token);
     }
 
-
-    /*
-    * Little bug to fix with redirect after sign up
-    * */
     @PostMapping("confirmSignUp/{token}")
     public ResponseEntity<String> submitCode(@PathVariable String token, @RequestBody AccountData accountData) throws NoSuchAlgorithmException, InvalidKeyException {
         AWSCognitoService awsCognitoService = new AWSCognitoService();
@@ -103,14 +81,16 @@ public class AuthController {
 
 
     @PostMapping("/loginRequest")
-    public ResponseEntity<String> submitLoginRequest(@RequestBody LoginData loginData) {
+    public ResponseEntity<CognitoTokenResponse> submitLoginRequest(@RequestBody LoginData loginData) {
         AWSCognitoService awsCognitoService = new AWSCognitoService();
-//        System.out.println(awsCognitoService.authenticateUser(identityProviderClient, AWSCognitoService.USERPOOLID, AWSCognitoService.CLIENTID,
-//                            loginData.getName(), loginData.getPassword()));
+        System.out.println(awsCognitoService.authenticateUser(identityProviderClient, AWSCognitoService.USERPOOLID, AWSCognitoService.CLIENTID,
+                            loginData.getName(), loginData.getPassword()));
 
 
-        //awsCognitoService.authenticateUser(identityProviderClient, AWSCognitoService.CLIENTID, AWSCognitoService.IAMID, loginData.getName(), loginData.getName(), loginData.getPassword());
-        return ResponseEntity.ok("Form submitted successfully");
+        CognitoTokenResponse tokenResponse = awsCognitoService.authenticateUser(identityProviderClient, AWSCognitoService.USERPOOLID, AWSCognitoService.CLIENTID,
+                                                                                loginData.getName(), loginData.getPassword());
+
+        return ResponseEntity.ok(tokenResponse);
     }
 }
 
