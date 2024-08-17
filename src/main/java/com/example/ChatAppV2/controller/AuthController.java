@@ -39,12 +39,27 @@ public class AuthController {
     @PostMapping("/signUpRequest")
     public ResponseEntity<String> submitSignUpRequest(@RequestBody AccountData accountData) throws NoSuchAlgorithmException, InvalidKeyException {
         AWSCognitoService awsCognitoService = new AWSCognitoService();
-        awsCognitoService.signUp(identityProviderClient, accountData.getName(), accountData.getPassword(), accountData.getEmail());
 
-        String token = UUID.randomUUID().toString();
-        String confirmationUrl = "confirm/" + token;
+        if (!isValidPassword(accountData.getPassword())) {
+            //return new ResponseEntity<>("Invalid Password", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Password");
+        }
+            //awsCognitoService.signUp(identityProviderClient, accountData.getName(), accountData.getPassword(), accountData.getEmail());
 
-        return new ResponseEntity<>(confirmationUrl, HttpStatus.OK);
+            String token = UUID.randomUUID().toString();
+            String confirmationUrl = "confirm/" + token;
+
+//            return ResponseEntity.ok(confirmationUrl);
+
+        return ResponseEntity.ok(confirmationUrl);
+
+    }
+
+
+
+    private boolean isValidPassword(String password) {
+        String passwordPattern = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%?=*&]).{8,20})";
+        return password.matches(passwordPattern);
     }
 
     @GetMapping("confirmSignUp/{token}")
@@ -56,6 +71,10 @@ public class AuthController {
         return ResponseEntity.ok(token);
     }
 
+
+    /*
+    * Little bug to fix with redirect after sign up
+    * */
     @PostMapping("confirmSignUp/{token}")
     public ResponseEntity<String> submitCode(@PathVariable String token, @RequestBody AccountData accountData) throws NoSuchAlgorithmException, InvalidKeyException {
         AWSCognitoService awsCognitoService = new AWSCognitoService();
@@ -63,33 +82,19 @@ public class AuthController {
         try {
         awsCognitoService.confirmSignUp(AWSCognitoService.CLIENTID, identityProviderClient, accountData.getConfirmationCode(), accountData.getUsername());
         } catch(CodeMismatchException e) {
-            return ResponseEntity.ok("Invalid confirmation code was found");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid confirmation code was found");
         }
-
         return ResponseEntity.ok("Successfully Confirmed");
-
-        // still confirm
     }
 
     private boolean validateToken(String token) {return true;}
 
 
-
-
-
-
-
-
-
-
-
-
-
     @PostMapping("/loginRequest")
     public ResponseEntity<String> submitLoginRequest(@RequestBody LoginData loginData) {
         AWSCognitoService awsCognitoService = new AWSCognitoService();
-        System.out.println(awsCognitoService.authenticateUser(identityProviderClient, AWSCognitoService.USERPOOLID, AWSCognitoService.CLIENTID,
-                            loginData.getName(), loginData.getPassword()));
+//        System.out.println(awsCognitoService.authenticateUser(identityProviderClient, AWSCognitoService.USERPOOLID, AWSCognitoService.CLIENTID,
+//                            loginData.getName(), loginData.getPassword()));
 
 
         //awsCognitoService.authenticateUser(identityProviderClient, AWSCognitoService.CLIENTID, AWSCognitoService.IAMID, loginData.getName(), loginData.getName(), loginData.getPassword());
