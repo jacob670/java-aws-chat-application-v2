@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.rmi.ServerError;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -136,5 +137,27 @@ public class AWSCognitoService {
         } catch (Exception e) {
             throw new RuntimeException("Error computing secret hash", e);
         }
+    }
+
+    public static boolean isUsernameTaken(CognitoIdentityProviderClient cognitoIdentityProviderClient, String username, String poolId) {
+
+        /*
+        * if an exception is thrown, the username is not in the cognito pool, therefore returns false
+        * if the try block runs successfully, there was a user with that name already in the pool, therefore already exists and returns true
+        * */
+
+        try {
+            AdminGetUserRequest adminGetUserRequest = AdminGetUserRequest.builder()
+                    .username(username)
+                    .userPoolId(poolId)
+                    .build();
+
+            AdminGetUserResponse adminGetUserResponse = cognitoIdentityProviderClient.adminGetUser(adminGetUserRequest);
+            System.out.println("This user was created at: " + adminGetUserResponse.userCreateDate());
+        }
+        catch (UserNotFoundException e) {
+            return false;
+        }
+        return true;
     }
 }

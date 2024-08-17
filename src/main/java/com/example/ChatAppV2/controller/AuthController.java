@@ -40,22 +40,34 @@ public class AuthController {
     public ResponseEntity<String> submitSignUpRequest(@RequestBody AccountData accountData) throws NoSuchAlgorithmException, InvalidKeyException {
         AWSCognitoService awsCognitoService = new AWSCognitoService();
 
+        boolean isUsernameTaken = AWSCognitoService.isUsernameTaken(identityProviderClient, accountData.getName(), AWSCognitoService.USERPOOLID);
+
         if (!isValidPassword(accountData.getPassword())) {
             //return new ResponseEntity<>("Invalid Password", HttpStatus.BAD_REQUEST);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Password");
         }
-            //awsCognitoService.signUp(identityProviderClient, accountData.getName(), accountData.getPassword(), accountData.getEmail());
 
-            String token = UUID.randomUUID().toString();
-            String confirmationUrl = "confirm/" + token;
+        if (isUsernameTaken) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists in system");
+        }
+        //awsCognitoService.signUp(identityProviderClient, accountData.getName(), accountData.getPassword(), accountData.getEmail());
 
-//            return ResponseEntity.ok(confirmationUrl);
+        String token = UUID.randomUUID().toString();
+        String confirmationUrl = "confirm/" + token;
 
+        System.out.println(accountData.getName());
         return ResponseEntity.ok(confirmationUrl);
-
     }
 
-
+//    @GetMapping("/isUsernameTaken")
+//    public ResponseEntity<String> getValidityUsername(@RequestBody AccountData accountData) {
+//        boolean isUsernameTaken = AWSCognitoService.isUsernameTaken(identityProviderClient, accountData.getUsername(), AWSCognitoService.USERPOOLID);
+//
+//        if (!isUsernameTaken) {
+//            return ResponseEntity.ok("Username does not exist in the system");
+//        }
+//        return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists in system");
+//    }
 
     private boolean isValidPassword(String password) {
         String passwordPattern = "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%?=*&]).{8,20})";
