@@ -1,10 +1,15 @@
 package com.example.ChatAppV2.controller;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.JWTVerifier;
 import com.example.ChatAppV2.config.AWSConfig;
-import com.example.ChatAppV2.model.AccountData;
-import com.example.ChatAppV2.model.LoginData;
-import com.example.ChatAppV2.model.CognitoTokenResponse;
+import com.example.ChatAppV2.model.aws.AccountData;
+import com.example.ChatAppV2.model.aws.LoginData;
+import com.example.ChatAppV2.model.aws.CognitoTokenResponse;
 import com.example.ChatAppV2.service.AWSCognitoService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +26,7 @@ import java.util.UUID;
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
+public class AuthenticationController {
 
     private final AwsBasicCredentials awsBasicCredentials = AwsBasicCredentials.create(AWSConfig.ACCESSKEY, AWSConfig.SECRETKEY);
 
@@ -29,6 +34,9 @@ public class AuthController {
             .region(Region.US_EAST_2)
             .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
             .build();
+
+    @Autowired
+    private AWSCognitoService awsCognitoService;
 
     @PostMapping("/signUpRequest")
     public ResponseEntity<String> submitSignUpRequest(@RequestBody AccountData accountData) throws NoSuchAlgorithmException, InvalidKeyException {
@@ -92,5 +100,12 @@ public class AuthController {
 
         return ResponseEntity.ok(tokenResponse);
     }
+
+    @GetMapping("/getusername")
+    public String getUserName(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        return awsCognitoService.getUserNameFromToken(token);
+    }
+
 }
 

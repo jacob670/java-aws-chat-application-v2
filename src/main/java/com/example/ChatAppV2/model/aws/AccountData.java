@@ -1,4 +1,4 @@
-package com.example.ChatAppV2.model;
+package com.example.ChatAppV2.model.aws;
 
 public class AccountData extends LoginData {
     private String email;

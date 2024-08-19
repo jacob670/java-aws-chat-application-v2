@@ -1,6 +1,10 @@
 package com.example.ChatAppV2.service;
 
-import com.example.ChatAppV2.model.CognitoTokenResponse;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.JWTVerifier;
+import com.example.ChatAppV2.model.aws.CognitoTokenResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
@@ -118,8 +122,6 @@ public class AWSCognitoService {
         System.out.println(response.authenticationResult());
         System.out.println(response.challengeNameAsString());
 
-        //return response.authenticationResult().accessToken();
-
         return new CognitoTokenResponse(
                 response.authenticationResult().accessToken(),
                 response.authenticationResult().idToken(),
@@ -162,4 +164,18 @@ public class AWSCognitoService {
         }
         return true;
     }
+
+    public String getUserNameFromToken(String token) {
+        try {
+            byte[] secretKey = Base64.getDecoder().decode(base64SecretKey); // Decode base64 key
+            Algorithm algorithm = Algorithm.HMAC256(secretKey); // Use HS256 with byte array key
+            JWTVerifier verifier = JWT.require(algorithm)
+                    .build();
+            DecodedJWT decodedJWT = verifier.verify(token);
+            return decodedJWT.getClaim("name").asString(); // Adjust claim name if needed
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid Token", e);
+        }
+    }
+
 }
