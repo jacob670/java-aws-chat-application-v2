@@ -175,7 +175,7 @@ public class AWSCognitoService {
     public CognitoUserProperties getApplicationUserProperties(String idToken) {
 
         String region = "us-east-2";
-        String userPoolId = "us-east-2_R2LJFWtgi";
+        String userPoolId = USERPOOLID;
         String jwksUrl = "https://cognito-idp." + region + ".amazonaws.com/"+userPoolId;
 
         try {
