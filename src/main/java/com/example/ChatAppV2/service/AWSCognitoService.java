@@ -1,10 +1,15 @@
 package com.example.ChatAppV2.service;
 
+import com.auth0.jwk.Jwk;
+import com.auth0.jwk.JwkProvider;
+import com.auth0.jwk.JwkProviderBuilder;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.example.ChatAppV2.model.aws.CognitoTokenResponse;
+import com.example.ChatAppV2.model.aws.CognitoUserProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
@@ -15,7 +20,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class AWSCognitoService {
@@ -165,17 +172,44 @@ public class AWSCognitoService {
         return true;
     }
 
-    public String getUserNameFromToken(String token) {
-        try {
-            byte[] secretKey = Base64.getDecoder().decode(base64SecretKey); // Decode base64 key
-            Algorithm algorithm = Algorithm.HMAC256(secretKey); // Use HS256 with byte array key
-            JWTVerifier verifier = JWT.require(algorithm)
-                    .build();
-            DecodedJWT decodedJWT = verifier.verify(token);
-            return decodedJWT.getClaim("name").asString(); // Adjust claim name if needed
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid Token", e);
-        }
-    }
+    public CognitoUserProperties getApplicationUserProperties(String idToken) {
 
+        String region = "us-east-2";
+        String userPoolId = "us-east-2_R2LJFWtgi";
+        String jwksUrl = "https://cognito-idp." + region + ".amazonaws.com/"+userPoolId;
+
+        try {
+            // Create a JWK Provider
+            JwkProvider provider = new JwkProviderBuilder(jwksUrl)
+                    .cached(10, 24, TimeUnit.HOURS) // Cache up to 10 keys for 24 hours
+                    .rateLimited(10, 1, TimeUnit.MINUTES) // If rate limit is hit, it will block up to 10 requests per minute
+                    .build();
+
+            // Decode the token to get the header
+            DecodedJWT jwt = JWT.decode(idToken);
+
+            // Get the JWK for the key ID in the token header
+            Jwk jwk = provider.get(jwt.getKeyId());
+
+            // Get the public key from the JWK
+            RSAPublicKey publicKey = (RSAPublicKey) jwk.getPublicKey();
+
+            // Verify the token using the public key
+            Algorithm algorithm = Algorithm.RSA256(publicKey, null);
+            algorithm.verify(jwt);
+
+            return new CognitoUserProperties(
+                    jwt.getClaim("cognito:username").asString(),
+                    jwt.getClaim("email").asString(),
+                    jwt.getIssuer(),
+                    jwt.getClaim("email_verified").asBoolean()
+            );
+
+        } catch (JWTVerificationException e) {
+            System.err.println("Invalid token: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+        return null;
+    }
 }

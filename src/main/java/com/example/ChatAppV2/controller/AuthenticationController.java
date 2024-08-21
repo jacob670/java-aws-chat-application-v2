@@ -6,6 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.example.ChatAppV2.config.AWSConfig;
 import com.example.ChatAppV2.model.aws.AccountData;
+import com.example.ChatAppV2.model.aws.CognitoUserProperties;
 import com.example.ChatAppV2.model.aws.LoginData;
 import com.example.ChatAppV2.model.aws.CognitoTokenResponse;
 import com.example.ChatAppV2.service.AWSCognitoService;
@@ -101,10 +102,12 @@ public class AuthenticationController {
         return ResponseEntity.ok(tokenResponse);
     }
 
-    @GetMapping("/getusername")
-    public String getUserName(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        return awsCognitoService.getUserNameFromToken(token);
+    @GetMapping("/getUserProperties")
+    public ResponseEntity<CognitoUserProperties> getUserName(@RequestHeader("Authorization") String token) {
+        AWSCognitoService awsCognitoService = new AWSCognitoService();
+        CognitoUserProperties cognitoUserProperties = awsCognitoService.getApplicationUserProperties(token);
+
+        return ResponseEntity.ok(cognitoUserProperties);
     }
 
 }
