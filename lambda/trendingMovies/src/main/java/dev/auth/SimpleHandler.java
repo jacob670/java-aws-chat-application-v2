@@ -31,10 +31,11 @@ public class SimpleHandler implements RequestHandler<APIGatewayProxyRequestEvent
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
 
+        // BEARERTOKEN is hidden in this directory from lambdas
         HttpRequest request1 = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.themoviedb.org/3/trending/movie/day?language=en-US"))
                 .GET()
-                .headers("accept", "application/json", "Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjOTdhZGU5YWM1NTc4NTgwNmRjMjUxYTg3NWEyM2M5MSIsIm5iZiI6MTcyNDg4OTE1Ni42MTAzMDYsInN1YiI6IjY1Nzc2ZWU0YTFkMzMyMDExYjRmOTI0MSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.vaPDBOBdsRgyDzWCOllJ1cftMPMKpnx7rqym6iCC6L8")
+                .headers("accept", "application/json", "Authorization", BEARERTOKEN)
                 .build();
 
         HttpClient client = HttpClient.newHttpClient();
