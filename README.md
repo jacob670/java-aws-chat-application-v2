@@ -1,7 +1,8 @@
 # Application Overview, Cloud Services, and Connections
 
 ## Overview
-This project bla
+The application is built using the Spring Boot Framework for the server side. The client side is built using the React.js framework. Additionally, AWS cloud services are utilized in order to have a scalable and efficient app. 
+- **[Client Side in React.js]** (https://github.com/jacob670/react-aws-chat-application-v2-frontend)
 
 ## Key Features
 - **Serverless REST API**:
@@ -17,7 +18,14 @@ This project bla
     - External API Requests
       - These requests are made from The Movie Database(TMDB) API and are incorporated in the application for information
 - **DynamoDB**:
+  - A NoSQL database stores a variety of features related to the application
+  - The primary key is the idToken, which will map and sort the users data in the table
 - **API Gateway**:
+  - 2 separate APIs are built and used
+    - Serverless CRUD API
+      - This API is used for CRUD actions for a specific feature of the app
+    - Movies REST API
+      - This API uses lambdas that are written along with external APIs, which are then called in the client-side
 - **Cognito**:
   - Cognito is used along with Cognito Pools in order to help authenticate and authorize the users of the application
   - The keys recieved from this service help make API calls and validate the user within the application
