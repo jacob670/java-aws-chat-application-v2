@@ -2,6 +2,7 @@ package com.example.ChatAppV2.controller;
 
 import com.example.ChatAppV2.model.tmdb.MovieSearch;
 import com.example.ChatAppV2.service.AWSCognitoService;
+import com.example.ChatAppV2.service.JSONService;
 import com.example.ChatAppV2.service.TMDBService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,15 +25,19 @@ public class TMDBController {
             .build();
 
     private final TMDBService tmdbService;
+    private final JSONService jsonService;
 
-    public TMDBController(TMDBService tmdbService) {
+    public TMDBController(TMDBService tmdbService, JSONService jsonService) {
         this.tmdbService = tmdbService;
+        this.jsonService = jsonService;
     }
 
     @PostMapping("/fetchMovieId")
-    public ResponseEntity<String> getMovieID(@RequestBody MovieSearch movieSearch) {
+    public ResponseEntity<Integer> getMovieID(@RequestBody MovieSearch movieSearch) {
         String movieData = tmdbService.searchMovie(movieSearch);
-        return ResponseEntity.ok(movieData);
+        int id = jsonService.parseMovieSearchResponse(movieData);
+
+        return ResponseEntity.ok(id);
     }
 
 }
