@@ -1,5 +1,8 @@
 # Application Overview, Cloud Services, and Connections
 
+got to fix the movie search id. if you spell it wrong program just breaks. needs to return bad response bla bla
+got to add token experitation and better login experience.
+
 ## Overview
 The application is built using the Spring Boot Framework for the server side. The client side is built using the React.js framework. Additionally, AWS cloud services are utilized in order to have a scalable and efficient app. 
 - **[Client Side in React.js]** (https://github.com/jacob670/react-aws-chat-application-v2-frontend)

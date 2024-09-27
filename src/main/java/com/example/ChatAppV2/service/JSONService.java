@@ -5,10 +5,12 @@ import com.example.ChatAppV2.model.tmdb.MovieSearchResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class JSONService {
     public int parseMovieSearchResponse(String movieData) {
         ObjectMapper objectMapper = new ObjectMapper();

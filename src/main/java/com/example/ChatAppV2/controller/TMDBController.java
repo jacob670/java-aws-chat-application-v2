@@ -35,6 +35,7 @@ public class TMDBController {
     @PostMapping("/fetchMovieId")
     public ResponseEntity<Integer> getMovieID(@RequestBody MovieSearch movieSearch) {
         String movieData = tmdbService.searchMovie(movieSearch);
+        System.out.println(movieSearch.getQueryString());
         int id = jsonService.parseMovieSearchResponse(movieData);
 
         return ResponseEntity.ok(id);
