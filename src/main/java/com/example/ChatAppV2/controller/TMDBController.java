@@ -1,5 +1,6 @@
 package com.example.ChatAppV2.controller;
 
+import com.example.ChatAppV2.model.tmdb.Movie;
 import com.example.ChatAppV2.model.tmdb.MovieSearch;
 import com.example.ChatAppV2.service.AWSCognitoService;
 import com.example.ChatAppV2.service.JSONService;
@@ -14,6 +15,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -36,9 +38,18 @@ public class TMDBController {
     public ResponseEntity<Integer> getMovieID(@RequestBody MovieSearch movieSearch) {
         String movieData = tmdbService.searchMovie(movieSearch);
         System.out.println(movieSearch.getQueryString());
+
         int id = jsonService.parseMovieSearchResponse(movieData);
 
         return ResponseEntity.ok(id);
+    }
+
+    @GetMapping("/fetchRecommendedMovies")
+    public ResponseEntity<List<Movie>> getRecommendedMovies(@RequestParam String movieId) {
+        String data = tmdbService.findMovieRecommendations(movieId);
+        List<Movie> movies = jsonService.parseRecommendedMoviesResponse(data);
+
+        return ResponseEntity.ok(movies);
     }
 
 }

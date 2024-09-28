@@ -1,6 +1,7 @@
 package com.example.ChatAppV2.service;
 
 import com.example.ChatAppV2.model.tmdb.Movie;
+import com.example.ChatAppV2.model.tmdb.MovieRecommendationResponse;
 import com.example.ChatAppV2.model.tmdb.MovieSearchResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -23,9 +24,18 @@ public class JSONService {
             }
 
             return ids.get(0);
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Movie> parseRecommendedMoviesResponse(String movieData) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            MovieRecommendationResponse movieRecommendationResponse = objectMapper.readValue(movieData, MovieRecommendationResponse.class);
+            return movieRecommendationResponse.getMovies();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

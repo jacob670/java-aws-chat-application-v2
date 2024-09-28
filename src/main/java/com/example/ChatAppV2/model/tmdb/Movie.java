@@ -10,6 +10,7 @@ public class Movie {
     private List<Integer> genreIds;
     private int id;
     private String originalLanguage;
+    private String mediaType;
     private String originalTitle;
     private String overview;
     private double popularity;
@@ -69,6 +70,11 @@ public class Movie {
     @JsonProperty("original_title")
     public String getOriginalTitle() {
         return originalTitle;
+    }
+
+    @JsonProperty("media_type")
+    public String getMediaType() {
+        return mediaType;
     }
 
     public void setOriginalTitle(String originalTitle) {

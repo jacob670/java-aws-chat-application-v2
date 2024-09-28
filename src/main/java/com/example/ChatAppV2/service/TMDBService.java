@@ -59,4 +59,22 @@ public class TMDBService {
             throw new RuntimeException("Request has failed");
         }
     }
+
+     public String findMovieRecommendations(String movieId) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://lnqe826bld.execute-api.us-east-2.amazonaws.com/dev/recommendedMovies"+"?movieId=" + movieId))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("Request has failed");
+            }
+            return response.body();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("Request has failed");
+        }
+    }
 }
