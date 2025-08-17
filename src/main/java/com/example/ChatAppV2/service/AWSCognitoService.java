@@ -179,22 +179,17 @@ public class AWSCognitoService {
         String jwksUrl = "https://cognito-idp." + region + ".amazonaws.com/"+userPoolId;
 
         try {
-            // Create a JWK Provider
             JwkProvider provider = new JwkProviderBuilder(jwksUrl)
-                    .cached(10, 24, TimeUnit.HOURS) // Cache up to 10 keys for 24 hours
-                    .rateLimited(10, 1, TimeUnit.MINUTES) // If rate limit is hit, it will block up to 10 requests per minute
+                    .cached(10, 24, TimeUnit.HOURS)
+                    .rateLimited(10, 1, TimeUnit.MINUTES)
                     .build();
 
-            // Decode the token to get the header
             DecodedJWT jwt = JWT.decode(idToken);
 
-            // Get the JWK for the key ID in the token header
             Jwk jwk = provider.get(jwt.getKeyId());
 
-            // Get the public key from the JWK
             RSAPublicKey publicKey = (RSAPublicKey) jwk.getPublicKey();
 
-            // Verify the token using the public key
             Algorithm algorithm = Algorithm.RSA256(publicKey, null);
             algorithm.verify(jwt);
 

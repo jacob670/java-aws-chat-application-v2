@@ -8,12 +8,11 @@ import java.util.List;
 
 public class MovieRecommendationResponse {
     @JsonProperty("body")
-    private String body; // Keep body as a string to parse later
+    private String body;
 
     private int statusCode;
     private Headers headers;
 
-    // Method to parse the JSON string in body to a List<Movie>
     public List<Movie> getMovies() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(body, new TypeReference<List<Movie>>() {});

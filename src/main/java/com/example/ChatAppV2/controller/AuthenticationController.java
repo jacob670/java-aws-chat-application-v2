@@ -96,7 +96,7 @@ public class AuthenticationController {
                             loginData.getName(), loginData.getPassword()));
 
 
-        CognitoTokenResponse tokenResponse = awsCognitoService.authenticateUser(identityProviderClient, AWSCognitoService.USERPOOLID, AWSCognitoService.CLIENTID,
+            CognitoTokenResponse tokenResponse = awsCognitoService.authenticateUser(identityProviderClient, AWSCognitoService.USERPOOLID, AWSCognitoService.CLIENTID,
                                                                                 loginData.getName(), loginData.getPassword());
 
         return ResponseEntity.ok(tokenResponse);
@@ -109,6 +109,4 @@ public class AuthenticationController {
 
         return ResponseEntity.ok(cognitoUserProperties);
     }
-
 }
-
